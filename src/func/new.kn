@@ -1,0 +1,8 @@
++func act()
+	var result: wnd@MsgBoxResult :: wnd@msgBox(\main@wndMain, "新規データを作成しますか？\n(保存していないデータは削除されます)", \main@apName, %warn, %yesNoCancel)
+	if(result = %yes)
+		do \main@editText.setText("")
+	else
+		ret
+	end if
+end func

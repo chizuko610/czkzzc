@@ -1,0 +1,107 @@
++var apName: []char :: "czkzzc"
++var fName: []char
++var fPath: []char
+
++var wndMain: wnd@Wnd
++var editText: wnd@EditMulti
++var edit: wnd@EditMulti
++var editText2: wnd@EditMulti
+
+var f: dict<[]char, func<()>>
+var id: dict<int, []char>
+
+func main()
+	do @fName :: "new"
+	do @wndMain :: wnd@makeWnd(null, %normal, 400, 600, @apName ~ " - \{@fName} - ")
+	do @wndMain.onPushMenu :: @wndMainOnPushMenu
+	do @editText :: wnd@makeEditMulti(@wndMain, 0, 0, 400, 400, %fix, %fix)
+	do @edit :: wnd@makeEditMulti(@wndMain, 0, 0, 400, 400, %fix, %fix)
+	do @editText2 :: wnd@makeEditMulti(@wndMain, 0, 400, 400, 200, %fix, %fix)
+	do @edit.onChange :: @chg
+	do @editText2.readonly(true)
+	do @wndMain.onResize :: @re
+	do @id :: #dict<int, []char>
+	do @f :: #dict<[]char, func<()>>
+	
+	;:::::::::::::::::::::::::
+	do @f.add("close", \func\close@act)
+	do @f.add("new", \func\new@act)
+	;:::::::::::::::::::::::::
+	
+	var menuMain: wnd@Menu :: wnd@makeMenu()
+	block
+		var handle: file@Reader :: file@makeReader("res/menu.txt")
+		do handle.delimiter(['\n'])
+		var n: int :: 1
+		while(handle.term() = false)
+			var o: wnd@Popup :: wnd@makePopup()
+			var s: [][]char :: handle.readStr().split(",")
+			var popup: []char :: s[0]
+			do menuMain.addPopup(s[0], o)
+			for i(1, ^s - 1)
+				if(s[i] = "---")
+					do o.addLine()
+				else
+					var v: [][]char :: s[i].split("@")
+					do o.add(n, v[0])
+					do @id.add(n, v[1])
+					do n :+ 1
+				end if
+			end for
+		end while
+		do handle.fin()
+	end block
+	do @wndMain.setMenu(menuMain)
+	
+	while(wnd@act())
+	end while
+end func
+
+func re(wnd: wnd@WndBase)
+	var x: int
+	var y: int
+	var w: int
+	var h: int
+	do @wndMain.getPos(&x, &y, &w, &h)
+	var v: int :: (h $ float * 0.6) $ int
+	do @editText.setPos(0, 0, w, v)
+	do @edit.setPos(0, v, w, 20)
+	do @editText2.setPos(0, 0 + v + 20, w, h - v - 20)
+end func
+func chg(wnd: wnd@WndBase)
+	if(wnd@key(%enter) = true)
+		var s: []char :: @edit.getText()
+		if(s <> "")
+			var ed2: [][]char :: s.split("\n")
+			var lin: []char :: ed2[^ed2 - 2]
+			var tok: [][]char :: lin.split(" ")
+			switch(tok[0].upper())
+			case "?"
+				do task@open("https://kuina.ch/kuin", %open, false)
+			case "B"
+				do \brain\bf@act(tok[1])
+			end switch
+		end if
+		do @edit.setText("")
+	end if
+end func
+func wndMainOnPushMenu(wnd: wnd@WndBase, id: int)
+	var s: []char
+	if(@id.exist(id) = true)
+		do s :: @id.get(id, &)
+	else
+		ret
+	end if
+	if(@f.exist(s) = true)
+		do @f.get(s, &)()
+	end if
+	
+	{
+	switch(id)
+	case 0x0001 {New}
+		do @editText.setText("") {テキストを空にする}
+	case 0x1001 {About Kuinote}
+		do wnd@msgBox(@wndMain, "Kuinote\nVersion 1.0.0\n(C)Kuina-chan", "Kuinote", %info, %ok)
+	end switch
+	}
+end func

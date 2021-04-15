@@ -1,0 +1,1 @@
+File,新規@new,---,終了@close

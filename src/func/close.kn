@@ -1,0 +1,8 @@
++func act()
+	var result: wnd@MsgBoxResult :: wnd@msgBox(\main@wndMain, "終了しても良いですか？", \main@apName, %warn, %yesNoCancel)
+	if(result = %yes)
+		do \main@wndMain.close()
+	else
+		ret
+	end if
+end func
